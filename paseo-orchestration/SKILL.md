@@ -37,25 +37,31 @@ optional control tower
 Let the control tower route initiatives, set priorities, resolve dependencies, and choose review depth.
 Let the initiative orchestrator own implementation, validation, evidence, and handoff. Never add another management tier.
 
-## Prepare one workspace and isolated worktrees
+## Prepare one Paseo-managed workspace and isolated worktrees
 
-Use one Paseo workspace for the initiative. Use one writing worktree per
-repository and attach the writer and any reviewers to that existing workspace.
+Use one initiative workspace and one Paseo-managed writing worktree per repository. Prefer creating
+the writer with `create_agent.workspace.source.kind = "worktree"`; this atomically creates the worktree
+and starts its owner. Use `create_worktree` separately only when no agent should start yet, then attach
+the writer and reviewers with the returned `workspaceId`. Do not use manual `git worktree add` for
+initiative work that Paseo must own and clean up.
 
 Before creating or reusing them:
 
-1. Inspect active agents, workspaces, worktrees, `git status`, and `git worktree list`.
+1. Inspect Paseo `list_agents` and `list_worktrees`, plus `git status` and `git worktree list`.
 2. Preserve dirty user work; never reset, overwrite, or discard it.
 3. Refresh the shared `main` from `origin/main` before branching only when authorized and safe.
-4. Reuse an owner-supplied workspace or worktree.
-5. For cross-repository work, create one worktree in each repository but keep one initiative workspace.
-6. Inspect actual branch changes with a two-dot diff such as `git diff origin/main..HEAD`.
+4. Reuse an owner-supplied Paseo workspace/worktree when it matches the initiative.
+5. For cross-repository work, create one Paseo worktree in each repository under the same initiative.
+6. Treat returned `workspaceId`, `worktreePath`, and `branchName` as authoritative.
+7. Inspect actual branch changes with a two-dot diff such as `git diff origin/main..HEAD`.
 
-Create implementation and review agents as `subagent` children in the existing workspace. If the
-available interface cannot create and verify that relationship, stop rather than substituting a detached agent.
+Create implementation and review agents as `subagent` children attached to the existing workspace. If
+the interface cannot create and verify that relationship, stop rather than substituting a detached agent.
 
-Archive only after integration or explicit abandonment. First confirm tracked,
-untracked, and ignored state is clean; treat worktree archive as destructive.
+After integration or explicit abandonment, close the lifecycle through Paseo: confirm no active agent
+depends on the workspace; verify tracked, untracked, and ignored state is safe; archive agents; call
+`archive_worktree`; then run `list_worktrees` to verify removal. Delete any leftover local branch only
+after proving its tree is integrated or otherwise preserved. Treat worktree archival as destructive.
 
 ## Resolve the single writer from live preferences
 
