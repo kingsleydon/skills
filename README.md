@@ -1,42 +1,54 @@
-# claude-toolkit
+# Kingsley's Hermes skills
 
-A marketplace of custom Claude Code plugins with skills, agents, and utilities.
+Kingsley's personal collection of independent, installable Hermes skills.
+Each top-level skill directory contains its own `SKILL.md` and can be installed
+without copying the rest of the collection. Additional sibling skills may be
+added over time.
 
-## Plugins
+## Available skills
 
-### claude-toolkit
+- [`paseo-orchestration`](paseo-orchestration/SKILL.md) — coordinate a
+  substantial Paseo initiative with a bounded control tower, one Codex writer,
+  isolated worktrees, and risk-sized independent review.
 
-#### Skills
+## Install one skill
 
-**[parallel-codex](plugins/claude-toolkit/skills/parallel-codex/SKILL.md)** — Dual-track analysis: dispatches Claude Code and Codex as parallel read-only analysts, then synthesizes a unified recommendation.
+Choose a skill directory and copy only that directory into the active Hermes
+profile. For example:
 
-- **Trigger words:** `parallel codex`, `dual-track`, `parallel analysis`, `codex analysis`, `let codex check`, `second opinion`, `comparative analysis`, `parallel review`, `dual-track analysis`
-- **Requires:** openai/codex plugin installed via marketplace
-
-#### Agents
-
-**[code-reviewer](plugins/claude-toolkit/agents/code-reviewer.md)** — Opinionated code review with structured JSON output:
-
-- Zero tolerance for `as any`, `!` assertions, `@ts-ignore`
-- Every async action must have error handling
-- All user-facing text must be i18n-wrapped
-- Security: input validation, no exposed internals, escaped queries
-- Flag code duplication (3+ occurrences)
-- Structured JSON output with severity, confidence, and rule classification ([schema](plugins/claude-toolkit/schemas/review-output.schema.json))
-
-#### Extras
-
-**[statusline](plugins/claude-toolkit/extras/statusline/)** — Custom statusline showing directory, git branch, model, and context usage with color coding.
-
-See [statusline.sh](plugins/claude-toolkit/extras/statusline/statusline.sh) for installation instructions.
-
-## Installation
-
-```
-/plugin marketplace add kingsleydon/claude-toolkit
-/plugin install claude-toolkit@kingsleydon-claude-toolkit
+```sh
+skill="paseo-orchestration"
+mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
+cp -R "$skill" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+hermes skills list
 ```
 
-## License
+PowerShell:
 
-MIT
+```powershell
+$Skill = "paseo-orchestration"
+$HomePath = if ($env:HERMES_HOME) { $env:HERMES_HOME } else { Join-Path $env:LOCALAPPDATA "hermes" }
+New-Item -ItemType Directory -Force (Join-Path $HomePath "skills") | Out-Null
+Copy-Item -Recurse $Skill (Join-Path $HomePath "skills")
+hermes skills list
+```
+
+## Use
+
+Ask Hermes to orchestrate a substantial initiative with Paseo, or preload it:
+
+```sh
+hermes --skills paseo-orchestration
+```
+
+See the selected skill's `SKILL.md` for its complete instructions.
+
+## Public-repository note
+
+Before a public release, run the official skill-creator `quick_validate.py`,
+`git diff --check`, Gitleaks, and the compact filename-only pattern scan in the
+selected skill. The collection intentionally ships no custom validator, test
+suite, or CI subsystem. Record unavailable tools honestly and do not publish
+until the required release checks pass.
+
+License: [MIT](LICENSE).
